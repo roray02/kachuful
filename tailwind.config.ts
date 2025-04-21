@@ -21,6 +21,7 @@ export default {
       fontFamily: {
         'poker': ['"Poker In October Demo"', 'serif'],
         'kachufool': ['Carter One', 'Impact', 'Arial Black', 'sans-serif'],
+        'fresca': ['Fresca', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',

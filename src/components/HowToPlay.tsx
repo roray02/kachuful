@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const HowToPlay = () => {
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 font-fresca">
       <h2 className="text-3xl md:text-4xl font-bold text-center text-yellow-300 mb-8">
         How To Play Kachufool
       </h2>

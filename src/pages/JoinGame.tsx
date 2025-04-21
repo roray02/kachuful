@@ -52,7 +52,7 @@ const JoinGame = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 flex items-center justify-center p-4 font-fresca">
       <Card className="w-full max-w-md bg-indigo-800 border-indigo-600 text-white">
         <CardHeader>
           <CardTitle className="text-2xl text-yellow-300 text-center">

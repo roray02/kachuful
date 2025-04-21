@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -26,12 +25,11 @@ const RoundSummary: React.FC<RoundSummaryProps> = ({
   playerResults,
   nextDealerName
 }) => {
-  // Sort players by total score (descending)
   const sortedResults = [...playerResults].sort((a, b) => b.totalScore - a.totalScore);
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-indigo-900 text-white border-indigo-700 max-w-lg">
+      <DialogContent className="bg-indigo-900 text-white border-indigo-700 max-w-lg font-fresca">
         <DialogHeader>
           <DialogTitle className="text-2xl text-yellow-400 text-center">
             Round {round} Summary

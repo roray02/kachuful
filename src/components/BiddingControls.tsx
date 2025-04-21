@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -20,11 +19,9 @@ const BiddingControls: React.FC<BiddingControlsProps> = ({
 }) => {
   const [selectedBid, setSelectedBid] = useState<number | null>(null);
   
-  // Calculate available bids
   const getAvailableBids = () => {
     const bids = [];
     
-    // For the dealer, ensure the total bids can't equal the total tricks
     const minDealerBid = isDealer && (totalTricks - totalBidsMade) === 0 ? 1 : 0;
     
     for (let i = minDealerBid; i <= maxBid; i++) {
@@ -48,7 +45,7 @@ const BiddingControls: React.FC<BiddingControlsProps> = ({
   
   return (
     <motion.div 
-      className="bg-indigo-900 p-4 rounded-lg shadow-lg text-white"
+      className="bg-indigo-900 p-4 rounded-lg shadow-lg text-white font-fresca"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
