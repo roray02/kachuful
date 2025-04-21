@@ -8,7 +8,7 @@ export interface Card {
   id: string; // unique identifier for animations
 }
 
-export type GamePhase = "waiting" | "bidding" | "playing" | "roundEnd";
+export type GamePhase = "waiting" | "bidding" | "playing" | "roundEnd" | "gameOver";
 
 export interface Player {
   id: string;
@@ -41,6 +41,11 @@ export interface GameState {
   trump?: Suit;
   currentTrick: Trick;
   pastTricks: Trick[];
+  winner?: {
+    id: string;
+    name: string;
+    score: number;
+  };
   roundSummary?: {
     playerResults: {
       playerId: string;
