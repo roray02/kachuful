@@ -9,10 +9,13 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
+          <div className="font-poker text-yellow-400 text-6xl mb-4">
+            KACHUFOOL
+          </div>
           <img 
             src="/lovable-uploads/72644929-55dc-4ce5-8df4-5a549c546011.png" 
             alt="Kachufool"
-            className="max-w-[600px] w-full mx-auto mb-4 text-yellow-400" 
+            className="max-w-[600px] w-full mx-auto mb-4 hidden" 
           />
         </div>
 
