@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { createDeck, shuffleDeck, dealCards, determineTrickWinner, calculateScore } = require('../utils/cardUtils');
+const { createDeck, shuffleDeck, dealCards, determineTrickWinner, calculateScore } = require('./utils/cardUtils');
 
 // Initialize Express app and HTTP server
 const app = express();
