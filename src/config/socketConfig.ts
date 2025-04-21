@@ -11,3 +11,4 @@ export const SOCKET_OPTIONS = {
   reconnectionDelay: 1000,
   timeout: 20000,
 };
+

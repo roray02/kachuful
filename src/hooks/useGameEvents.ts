@@ -64,3 +64,4 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     lobbyCode
   };
 };
+

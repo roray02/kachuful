@@ -25,3 +25,4 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
 };
 
 export default useGameSocket;
+
