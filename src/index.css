@@ -3,6 +3,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom font face declaration */
+@font-face {
+  font-family: 'Kachufool';
+  src: url('/lovable-uploads/1ca736d5-bb12-4088-b067-b0fd4439f122.png') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -101,9 +110,11 @@
   }
   
   /* Custom font styling */
-  .font-poker {
-    font-family: 'Poker In October Demo', serif;
+  .font-kachufool {
+    font-family: 'Impact', 'Arial Black', sans-serif;
     letter-spacing: 0.05em;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    text-transform: uppercase;
   }
 }
