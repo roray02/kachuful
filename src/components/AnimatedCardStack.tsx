@@ -5,7 +5,7 @@ import { Card } from '@/types/game';
 import GameCard from './GameCard';
 
 const CARD_COUNT = 30;
-const RADIUS = 300; // Increased radius for better spread
+const RADIUS = 200; // Reduced radius to keep cards within frame
 
 const AnimatedCardStack = () => {
   const [cards] = useState<Card[]>(() =>
