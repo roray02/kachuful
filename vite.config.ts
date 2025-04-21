@@ -19,8 +19,11 @@ export default defineConfig(({ mode }) => ({
           stdio: 'inherit'
         });
         
+        console.log('Started game server process');
+        
         server.httpServer?.on('close', () => {
           // Shutdown the game server when Vite stops
+          console.log('Stopping game server process');
           gameServer.kill();
         });
       }
@@ -38,7 +41,9 @@ export default defineConfig(({ mode }) => ({
       '/socket.io': {
         target: 'http://localhost:3001',
         ws: true,
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path
       }
     }
   }

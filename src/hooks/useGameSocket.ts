@@ -1,13 +1,13 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
 
-// Use a relative URL for socket connection which will be handled by the Vite proxy
+// Determine the correct socket URL based on environment
+// Using relative URL for production and absolute for local development
 const SOCKET_URL = window.location.hostname === 'localhost' 
   ? 'http://localhost:3001' 
-  : `${window.location.protocol}//${window.location.host}`;
+  : '';
 
 interface GameSocketProps {
   onGameStateUpdate?: (gameState: GameState) => void;
@@ -35,11 +35,11 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
 
   // Initialize socket connection
   useEffect(() => {
-    console.log('Connecting to game server at:', SOCKET_URL);
+    console.log('Connecting to game server at:', SOCKET_URL || window.location.origin);
     setIsConnecting(true);
     
     // Create socket with explicit URL and options
-    const socketInstance = io(SOCKET_URL, {
+    const socketInstance = io(SOCKET_URL || window.location.origin, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
@@ -51,7 +51,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       setConnected(true);
       setIsConnecting(false);
       setConnectionAttempts(0);
-      console.log('Connected to game server');
+      console.log('Connected to game server with ID:', socketInstance.id);
     });
     
     socketInstance.on('disconnect', () => {
