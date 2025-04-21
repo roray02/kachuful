@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import child_process from 'child_process'
 import { componentTagger } from "lovable-tagger"
+import type { ViteDevServer } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     {
       name: 'game-server',
-      configureServer(server) {
+      configureServer(server: ViteDevServer) {
         // Start the game server when Vite starts
         const gameServer = child_process.fork('./src/server/index.js', [], {
           stdio: 'inherit'
@@ -42,4 +43,3 @@ export default defineConfig(({ mode }) => ({
     }
   }
 }))
-
