@@ -5,7 +5,7 @@ import { Card } from '@/types/game';
 import GameCard from './GameCard';
 
 const CARD_COUNT = 30;
-const RADIUS = 200;
+const RADIUS = 300; // Increased radius for better spread
 
 const AnimatedCardStack = () => {
   const [cards] = useState<Card[]>(() =>
@@ -27,38 +27,46 @@ const AnimatedCardStack = () => {
   }, []);
 
   return (
-    <div className="relative h-96 w-full overflow-hidden">
-      <AnimatePresence>
-        {cards.map((card, index) => {
-          const angle = (index * (360 / CARD_COUNT)) * (Math.PI / 180);
-          const x = Math.cos(angle) * RADIUS;
-          const y = Math.sin(angle) * RADIUS;
+    <div className="relative h-96 w-full overflow-hidden bg-green-800/20">
+      <div className="absolute inset-0 flex items-center justify-center">
+        <AnimatePresence>
+          {cards.map((card, index) => {
+            const angle = (index * (360 / CARD_COUNT)) * (Math.PI / 180);
+            const x = Math.cos(angle) * RADIUS;
+            const y = Math.sin(angle) * RADIUS;
 
-          return (
-            <motion.div
-              key={card.id}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-              initial={{ x: 0, y: 0, rotate: 0, scale: 0.8 }}
-              animate={{
-                x: isSpread ? x : 0,
-                y: isSpread ? y : 0,
-                rotate: isSpread ? angle * (180 / Math.PI) + 90 : 0,
-                transition: {
-                  duration: 1.5,
-                  ease: "easeInOut",
-                  delay: isSpread ? index * 0.02 : (CARD_COUNT - index) * 0.02,
-                }
-              }}
-            >
-              <GameCard
-                card={card}
-                playable={false}
-                className="scale-75"
-              />
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+            return (
+              <motion.div
+                key={card.id}
+                className="absolute"
+                initial={{ 
+                  x: 0, 
+                  y: 0, 
+                  rotate: 0, 
+                  scale: 0.6, 
+                  zIndex: CARD_COUNT - index 
+                }}
+                animate={{
+                  x: isSpread ? x : 0,
+                  y: isSpread ? y : 0,
+                  rotate: isSpread ? angle * (180 / Math.PI) + 90 : 0,
+                  scale: isSpread ? 0.5 : 0.6,
+                  transition: {
+                    duration: 1.5,
+                    ease: "easeInOut",
+                    delay: isSpread ? index * 0.02 : (CARD_COUNT - index) * 0.02,
+                  }
+                }}
+              >
+                <GameCard
+                  card={card}
+                  playable={false}
+                />
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
