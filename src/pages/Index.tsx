@@ -12,7 +12,7 @@ const Index = () => {
           <img 
             src="/lovable-uploads/72644929-55dc-4ce5-8df4-5a549c546011.png" 
             alt="Kachufool"
-            className="max-w-[600px] w-full mx-auto mb-4"
+            className="max-w-[600px] w-full mx-auto mb-4 text-yellow-400" 
           />
         </div>
 
