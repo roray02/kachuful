@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import useGameSocket from "@/hooks/useGameSocket";
 
 const JoinGame = () => {
@@ -20,6 +21,7 @@ const JoinGame = () => {
     gameState, 
     error, 
     connected,
+    isConnecting,
     lobbyCode: connectedLobbyCode
   } = useGameSocket();
 
@@ -110,10 +112,20 @@ const JoinGame = () => {
             </div>
           )}
 
-          {!connected && (
-            <div className="text-center text-yellow-300 text-sm">
-              Connecting to server...
-            </div>
+          {isConnecting && (
+            <Alert className="bg-yellow-800 border-yellow-600">
+              <AlertDescription className="text-yellow-200">
+                Connecting to server... Please wait.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {!connected && !isConnecting && (
+            <Alert className="bg-red-800 border-red-600">
+              <AlertDescription className="text-red-200">
+                Cannot connect to the game server. The server might be down or experiencing issues.
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-3">

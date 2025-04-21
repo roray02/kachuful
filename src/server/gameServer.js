@@ -12,9 +12,12 @@ const io = new Server(server, {
   cors: {
     origin: "*", // Allow all origins in development
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["content-type"]
   },
-  transports: ['websocket', 'polling'] // Enable both WebSocket and polling
+  transports: ['websocket', 'polling'], // Enable both WebSocket and polling
+  pingTimeout: 60000, // Increase ping timeout
+  pingInterval: 25000  // Decrease ping interval
 });
 
 // Health check endpoint
@@ -559,4 +562,5 @@ server.listen(PORT, () => {
   console.log(`Game server running on port ${PORT}`);
 });
 
+// Make the server available for import
 module.exports = { server, io };

@@ -4,8 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
 
-// We'll use a relative URL to leverage Vite's proxy
-const SERVER_URL = '/socket.io';
+// We need to connect to the correct URL where the socket.io server is running
+const SOCKET_URL = 'http://localhost:3001';
 
 interface GameSocketProps {
   onGameStateUpdate?: (gameState: GameState) => void;
@@ -29,14 +29,25 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   const [lobbyCode, setLobbyCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   // Initialize socket connection
   useEffect(() => {
     console.log('Connecting to game server...');
-    const socketInstance = io();
+    setIsConnecting(true);
+    
+    // Create socket with explicit URL and options
+    const socketInstance = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
+    });
     
     socketInstance.on('connect', () => {
       setConnected(true);
+      setIsConnecting(false);
+      setConnectionAttempts(0);
       console.log('Connected to game server');
     });
     
@@ -47,6 +58,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     
     socketInstance.on('connect_error', (err) => {
       console.error('Socket connection error:', err);
+      setIsConnecting(false);
       setConnectionAttempts(prev => prev + 1);
       
       if (connectionAttempts > 3) {
@@ -188,6 +200,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     playerId,
     lobbyCode,
     error,
+    isConnecting,
     createLobby,
     joinLobby,
     startGame,
