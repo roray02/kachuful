@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import HowToPlay from "@/components/HowToPlay";
@@ -8,10 +9,10 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-western font-bold mb-4 text-yellow-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] tracking-wider">
+          <h1 className="text-5xl md:text-6xl font-poker font-bold mb-4 text-yellow-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] tracking-wider">
             Kachufool
           </h1>
-          <p className="text-xl md:text-2xl font-western text-yellow-200 tracking-wide">
+          <p className="text-xl md:text-2xl font-poker text-yellow-200 tracking-wide">
             A fun, strategic trick-taking card game!
           </p>
         </div>

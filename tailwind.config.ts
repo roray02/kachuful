@@ -19,7 +19,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        'western': ['West Bright', 'serif'],
+        'poker': ['"Poker In October Demo"', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
