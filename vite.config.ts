@@ -3,11 +3,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import child_process from 'child_process'
+import { componentTagger } from "lovable-tagger"
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    mode === 'development' && componentTagger(),
     {
       name: 'game-server',
       configureServer(server) {
@@ -22,13 +24,14 @@ export default defineConfig({
         });
       }
     }
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     }
   },
   server: {
+    host: "::",
     port: 8080,
     proxy: {
       '/socket.io': {
@@ -38,4 +41,5 @@ export default defineConfig({
       }
     }
   }
-})
+}))
+
