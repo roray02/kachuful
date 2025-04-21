@@ -29,6 +29,12 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8080
+    port: 8080,
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+      }
+    }
   }
 })

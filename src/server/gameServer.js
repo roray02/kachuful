@@ -1,4 +1,3 @@
-
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -12,8 +11,15 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*", // Allow all origins in development
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'] // Enable both WebSocket and polling
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('Game server is running');
 });
 
 // In-memory game state

@@ -4,7 +4,8 @@ import { io, Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
 
-const SERVER_URL = 'http://localhost:3001';
+// We'll use a relative URL to leverage Vite's proxy
+const SERVER_URL = '/socket.io';
 
 interface GameSocketProps {
   onGameStateUpdate?: (gameState: GameState) => void;
@@ -27,10 +28,12 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [lobbyCode, setLobbyCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
 
   // Initialize socket connection
   useEffect(() => {
-    const socketInstance = io(SERVER_URL);
+    console.log('Connecting to game server...');
+    const socketInstance = io();
     
     socketInstance.on('connect', () => {
       setConnected(true);
@@ -40,6 +43,15 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     socketInstance.on('disconnect', () => {
       setConnected(false);
       console.log('Disconnected from game server');
+    });
+    
+    socketInstance.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+      setConnectionAttempts(prev => prev + 1);
+      
+      if (connectionAttempts > 3) {
+        toast.error("Unable to connect to game server. Please try again later.");
+      }
     });
     
     socketInstance.on('error', (data: { message: string }) => {
@@ -52,7 +64,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [connectionAttempts]);
   
   // Game state updates
   useEffect(() => {
@@ -106,69 +118,69 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   
   // Create a new lobby
   const createLobby = useCallback(({ playerName, maxRounds = 10 }: CreateLobbyParams) => {
-    if (!socket || !connected) {
+    if (!socket) {
       setError('Not connected to server');
       toast.error('Not connected to server');
       return;
     }
     
     socket.emit('createLobby', { playerName, maxRounds });
-  }, [socket, connected]);
+  }, [socket]);
   
   // Join an existing lobby
   const joinLobby = useCallback(({ lobbyCode, playerName }: JoinLobbyParams) => {
-    if (!socket || !connected) {
+    if (!socket) {
       setError('Not connected to server');
       toast.error('Not connected to server');
       return;
     }
     
     socket.emit('joinLobby', { lobbyCode, playerName });
-  }, [socket, connected]);
+  }, [socket]);
   
   // Start the game
   const startGame = useCallback(() => {
-    if (!socket || !connected || !lobbyCode) {
+    if (!socket || !lobbyCode) {
       setError('Cannot start game');
       toast.error('Cannot start game');
       return;
     }
     
     socket.emit('startGame', { lobbyCode });
-  }, [socket, connected, lobbyCode]);
+  }, [socket, lobbyCode]);
   
   // Make a bid
   const makeBid = useCallback((bid: number) => {
-    if (!socket || !connected || !lobbyCode) {
+    if (!socket || !lobbyCode) {
       setError('Cannot make bid');
       toast.error('Cannot make bid');
       return;
     }
     
     socket.emit('makeBid', { lobbyCode, bid });
-  }, [socket, connected, lobbyCode]);
+  }, [socket, lobbyCode]);
   
   // Play a card
   const playCard = useCallback((cardId: string) => {
-    if (!socket || !connected || !lobbyCode) {
+    if (!socket || !lobbyCode) {
       setError('Cannot play card');
       toast.error('Cannot play card');
       return;
     }
     
     socket.emit('playCard', { lobbyCode, cardId });
-  }, [socket, connected, lobbyCode]);
+  }, [socket, lobbyCode]);
   
   // Start next round
   const startNextRound = useCallback(() => {
-    if (!socket || !connected || !lobbyCode) {
+    if (!socket || !lobbyCode) {
       setError('Cannot start next round');
       toast.error('Cannot start next round');
       return;
     }
     
     socket.emit('startNextRound', { lobbyCode });
-  }, [socket, connected, lobbyCode]);
+  }, [socket, lobbyCode]);
   
   return {
     connected,
