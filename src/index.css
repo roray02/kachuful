@@ -1,4 +1,8 @@
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer base {
   /* Custom font styling */
   .font-kachufool {
@@ -9,4 +13,3 @@
     text-transform: uppercase;
   }
 }
-
