@@ -20,7 +20,7 @@ export default {
     extend: {
       fontFamily: {
         'poker': ['"Poker In October Demo"', 'serif'],
-        'kachufool': ['Bebas Neue', 'Impact', 'Arial Black', 'sans-serif'],
+        'kachufool': ['Carter One', 'Impact', 'Arial Black', 'sans-serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
