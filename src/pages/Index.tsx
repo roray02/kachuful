@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import HowToPlay from "@/components/HowToPlay";
-import BannerImage from "@/components/BannerImage";
+import AnimatedCardStack from "@/components/AnimatedCardStack";
 
 const Index = () => {
   return (
@@ -18,7 +17,7 @@ const Index = () => {
         </div>
 
         <div className="mb-16">
-          <BannerImage />
+          <AnimatedCardStack />
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
