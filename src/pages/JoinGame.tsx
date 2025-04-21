@@ -12,6 +12,7 @@ const JoinGame = () => {
   const [playerName, setPlayerName] = useState("");
   const [lobbyCode, setLobbyCode] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [showConnectionError, setShowConnectionError] = useState(false);
   const navigate = useNavigate();
 
   // Initialize game socket
@@ -36,6 +37,21 @@ const JoinGame = () => {
       });
     }
   }, [gameState, connectedLobbyCode, navigate, playerName]);
+
+  // Only show connection error after a delay to avoid flashing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowConnectionError(!connected && !isConnecting);
+    }, 5000);
+    
+    // If we connect, clear the timer and don't show error
+    if (connected) {
+      clearTimeout(timer);
+      setShowConnectionError(false);
+    }
+    
+    return () => clearTimeout(timer);
+  }, [connected, isConnecting]);
 
   const handleCreateGame = () => {
     if (!playerName.trim()) {
@@ -120,7 +136,7 @@ const JoinGame = () => {
             </Alert>
           )}
           
-          {!connected && !isConnecting && (
+          {showConnectionError && (
             <Alert className="bg-red-800 border-red-600">
               <AlertDescription className="text-red-200">
                 Cannot connect to the game server. The server might be down or experiencing issues.

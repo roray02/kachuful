@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -13,7 +14,7 @@ const io = new Server(server, {
     origin: "*", // Allow all origins in development
     methods: ["GET", "POST"],
     credentials: true,
-    allowedHeaders: ["content-type"]
+    allowedHeaders: ["*"]
   },
   transports: ['websocket', 'polling'], // Enable both WebSocket and polling
   pingTimeout: 60000, // Increase ping timeout
@@ -22,6 +23,11 @@ const io = new Server(server, {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  res.status(200).send('Game server is running');
+});
+
+// Add a root endpoint for easy checking
+app.get('/', (req, res) => {
   res.status(200).send('Game server is running');
 });
 

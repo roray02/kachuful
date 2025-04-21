@@ -4,8 +4,10 @@ import { io, Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
 
-// We need to connect to the correct URL where the socket.io server is running
-const SOCKET_URL = 'http://localhost:3001';
+// Use a relative URL for socket connection which will be handled by the Vite proxy
+const SOCKET_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3001' 
+  : `${window.location.protocol}//${window.location.host}`;
 
 interface GameSocketProps {
   onGameStateUpdate?: (gameState: GameState) => void;
@@ -33,11 +35,12 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
 
   // Initialize socket connection
   useEffect(() => {
-    console.log('Connecting to game server...');
+    console.log('Connecting to game server at:', SOCKET_URL);
     setIsConnecting(true);
     
     // Create socket with explicit URL and options
     const socketInstance = io(SOCKET_URL, {
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
