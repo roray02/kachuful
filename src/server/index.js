@@ -1,17 +1,15 @@
 
+require('dotenv').config();
 const { server, io } = require('./gameServer');
 
-// This file is used to start the game server
+// Get port from environment variable or use default
 const PORT = process.env.PORT || 3001;
 
-// Make sure the server is listening on all interfaces
+// Listen on all network interfaces (important for deployment)
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Game server running on port ${PORT}`);
-  console.log(`Server is listening on all interfaces (0.0.0.0)`);
+  console.log('Server URL:', process.env.FRONTEND_URL || 'Development mode - accepting all origins');
 });
 
-// Log the io instance
-console.log('Game server initialized with Socket.IO');
-
-// Export the server and io for testing
+// Export the server and io instances for testing
 module.exports = { server, io };

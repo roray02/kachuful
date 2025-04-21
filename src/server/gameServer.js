@@ -1,24 +1,31 @@
-
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors');
 const { createDeck, shuffleDeck, dealCards, determineTrickWinner, calculateScore } = require('../utils/cardUtils');
 
 // Initialize Express app and HTTP server
 const app = express();
+
+// Enable CORS for all routes
+app.use(cors());
+
 const server = http.createServer(app);
 
 // Initialize Socket.IO with CORS configuration
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins in development
+    // In production, this should be your frontend URL
+    // In development, it allows connections from all origins
+    origin: process.env.FRONTEND_URL || "*",
     methods: ["GET", "POST"],
     credentials: true,
     allowedHeaders: ["*"]
   },
-  transports: ['websocket', 'polling'], // Enable both WebSocket and polling
-  pingTimeout: 60000, // Increase ping timeout
-  pingInterval: 25000  // Decrease ping interval
+  // Configure transport options
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 // Health check endpoint
@@ -568,5 +575,5 @@ server.listen(PORT, () => {
   console.log(`Game server running on port ${PORT}`);
 });
 
-// Make the server available for import
+// Export for use in index.js
 module.exports = { server, io };
