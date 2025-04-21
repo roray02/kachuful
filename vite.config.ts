@@ -1,22 +1,31 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import child_process from 'child_process'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
+export default defineConfig({
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+    {
+      name: 'game-server',
+      configureServer(server) {
+        // Start the game server when Vite starts
+        const gameServer = child_process.fork('./src/server/index.js', [], {
+          stdio: 'inherit'
+        });
+        
+        server.httpServer?.on('close', () => {
+          // Shutdown the game server when Vite stops
+          gameServer.kill();
+        });
+      }
+    }
+  ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-}));
+      '@': path.resolve(__dirname, './src'),
+    }
+  }
+})

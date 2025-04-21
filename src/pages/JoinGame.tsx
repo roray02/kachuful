@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/sonner";
+import useGameSocket from "@/hooks/useGameSocket";
 
 const JoinGame = () => {
   const [playerName, setPlayerName] = useState("");
@@ -12,22 +13,40 @@ const JoinGame = () => {
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
 
+  // Initialize game socket
+  const { 
+    createLobby, 
+    joinLobby, 
+    gameState, 
+    error, 
+    connected,
+    lobbyCode: connectedLobbyCode
+  } = useGameSocket();
+
+  // When we successfully connect to a lobby, navigate to the game page
+  useEffect(() => {
+    if (gameState && connectedLobbyCode) {
+      navigate(`/game/${connectedLobbyCode}`, { 
+        state: { 
+          playerName, 
+          gameState
+        } 
+      });
+    }
+  }, [gameState, connectedLobbyCode, navigate, playerName]);
+
   const handleCreateGame = () => {
     if (!playerName.trim()) {
       toast.error("Please enter your name");
       return;
     }
 
-    // In a real app, we would create a game on the server
-    // For now, we'll just generate a random code and navigate
-    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    navigate(`/game/${randomCode}`, { 
-      state: { 
-        playerName, 
-        isHost: true, 
-        lobbyCode: randomCode 
-      } 
-    });
+    if (!connected) {
+      toast.error("Connecting to server...");
+      return;
+    }
+
+    createLobby({ playerName });
   };
 
   const handleJoinGame = () => {
@@ -41,14 +60,12 @@ const JoinGame = () => {
       return;
     }
 
-    // In a real app, we would validate the lobby code on the server
-    navigate(`/game/${lobbyCode}`, { 
-      state: { 
-        playerName, 
-        isHost: false, 
-        lobbyCode 
-      } 
-    });
+    if (!connected) {
+      toast.error("Connecting to server...");
+      return;
+    }
+
+    joinLobby({ lobbyCode, playerName });
   };
 
   return (
@@ -92,6 +109,12 @@ const JoinGame = () => {
               />
             </div>
           )}
+
+          {!connected && (
+            <div className="text-center text-yellow-300 text-sm">
+              Connecting to server...
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-3">
           {isCreating ? (
@@ -99,6 +122,7 @@ const JoinGame = () => {
               <Button 
                 onClick={handleCreateGame} 
                 className="w-full bg-green-600 hover:bg-green-700"
+                disabled={!connected}
               >
                 Create Game
               </Button>
@@ -115,6 +139,7 @@ const JoinGame = () => {
               <Button 
                 onClick={handleJoinGame}
                 className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={!connected}
               >
                 Join Game
               </Button>
