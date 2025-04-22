@@ -38,11 +38,6 @@ const JoinGame = () => {
   // When we successfully connect to a lobby, navigate to the game page
   useEffect(() => {
     if (gameState && connectedLobbyCode) {
-      // Store the player name before navigating
-      if (playerName) {
-        localStorage.setItem('kachuLastPlayerName', playerName);
-      }
-      
       navigate(`/game/${connectedLobbyCode}`, { 
         state: { 
           playerName, 
@@ -79,8 +74,6 @@ const JoinGame = () => {
       return;
     }
 
-    // Store the player name before creating lobby
-    localStorage.setItem('kachuLastPlayerName', playerName);
     createLobby({ playerName });
   };
 
@@ -101,8 +94,6 @@ const JoinGame = () => {
       return;
     }
 
-    // Store the player name before joining lobby
-    localStorage.setItem('kachuLastPlayerName', playerName);
     joinLobby({ lobbyCode, playerName });
   };
 

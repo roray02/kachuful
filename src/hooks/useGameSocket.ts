@@ -22,7 +22,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     timestamp: number;
   } | null>(null);
   
-  // Store the current lobby code and player ID to localStorage for reconnection
+  // Store the current lobby code to localStorage for reconnection
   useEffect(() => {
     if (lobbyCode && playerId) {
       localStorage.setItem('kachuLastLobby', lobbyCode);
@@ -80,7 +80,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     gameActions.joinLobby(params);
   }, [connected, gameActions, reconnect]);
   
-  // Enhanced create lobby function that stores player name
+  // Enhanced create lobby function
   const enhancedCreateLobby = useCallback((params: { playerName: string; maxRounds?: number }) => {
     if (DEBUG_MODE) console.log('Create lobby attempt:', params);
     setLastJoinAttempt(null);

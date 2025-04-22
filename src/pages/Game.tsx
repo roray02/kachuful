@@ -18,20 +18,6 @@ const Game = () => {
   
   const [showRoundSummary, setShowRoundSummary] = useState(false);
   const [gameStateLocal, setGameStateLocal] = useState<GameState | null>(null);
-  const [name, setName] = useState<string>("");
-  const [hasJoinedAfterRefresh, setHasJoinedAfterRefresh] = useState(false);
-  
-  // Check for cached player name on initial load
-  useEffect(() => {
-    const cachedPlayerName = localStorage.getItem('kachuLastPlayerName');
-    if (cachedPlayerName) {
-      setName(cachedPlayerName);
-      if (DEBUG_MODE) console.log('Cached player name:', cachedPlayerName);
-    } else if (location.state?.playerName) {
-      setName(location.state.playerName);
-      if (DEBUG_MODE) console.log('Using player name from location state:', location.state.playerName);
-    }
-  }, [location.state]);
   
   // Set up socket connection with game state updates
   const {
@@ -41,8 +27,7 @@ const Game = () => {
     makeBid,
     playCard,
     startGame,
-    startNextRound,
-    joinLobby
+    startNextRound
   } = useGameSocket({
     onGameStateUpdate: (updatedGameState) => {
       setGameStateLocal(updatedGameState);
@@ -53,21 +38,6 @@ const Game = () => {
       }
     }
   });
-  
-  // Handle reconnection after refresh
-  useEffect(() => {
-    if (connected && lobbyCode && name && !gameStateLocal && !hasJoinedAfterRefresh) {
-      if (DEBUG_MODE) console.log(`Attempting to rejoin lobby ${lobbyCode} as ${name} after refresh`);
-      
-      // Only try to rejoin if we're not already in the game
-      joinLobby({
-        lobbyCode,
-        playerName: name
-      });
-      
-      setHasJoinedAfterRefresh(true);
-    }
-  }, [connected, lobbyCode, name, gameStateLocal, hasJoinedAfterRefresh, joinLobby]);
   
   // When connecting to an existing game
   useEffect(() => {
