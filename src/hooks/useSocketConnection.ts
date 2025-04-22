@@ -29,7 +29,7 @@ export const useSocketConnection = () => {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        timeout: 20000,
+        timeout: 30000, // Increased timeout for better handling
       });
       
       socketRef.current = socketInstance;

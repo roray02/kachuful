@@ -63,6 +63,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       // Reset lobby code if error is "Lobby not found"
       if (data.message === 'Lobby not found') {
         if (DEBUG_MODE) console.log('Resetting lobby code due to "Lobby not found" error');
+        // Do not reset lobbyCode state here to prevent React hook order issues
       }
     });
 
@@ -70,6 +71,12 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('reconnect', (attemptNumber: number) => {
       if (DEBUG_MODE) console.log(`Socket reconnected after ${attemptNumber} attempts`);
       toast.success('Reconnected to server!');
+      
+      // If we have a lobbyCode and playerId, attempt to rejoin the lobby
+      if (lobbyCode && playerId) {
+        if (DEBUG_MODE) console.log('Attempting to rejoin lobby after reconnection');
+        // We don't have playerName here, so we can't automatically rejoin
+      }
     });
 
     return () => {
@@ -80,7 +87,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       socket.off('error');
       socket.off('reconnect');
     };
-  }, [socket, onGameStateUpdate]);
+  }, [socket, onGameStateUpdate, lobbyCode, playerId]);
 
   return {
     gameState,

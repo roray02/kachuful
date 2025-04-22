@@ -12,15 +12,15 @@ interface GameSocketProps {
 }
 
 const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
+  const { socket, connected, isConnecting, error, reconnect } = useSocketConnection();
+  const { gameState, playerId, lobbyCode } = useGameEvents({ socket, onGameStateUpdate });
+  const gameActions = useGameActions({ socket, lobbyCode });
+  
   const [lastJoinAttempt, setLastJoinAttempt] = useState<{
     lobbyCode: string;
     playerName: string;
     timestamp: number;
   } | null>(null);
-  
-  const { socket, connected, isConnecting, error, reconnect } = useSocketConnection();
-  const { gameState, playerId, lobbyCode } = useGameEvents({ socket, onGameStateUpdate });
-  const gameActions = useGameActions({ socket, lobbyCode });
   
   // Enhanced join lobby function that tracks the attempt
   const enhancedJoinLobby = useCallback((params: { lobbyCode: string; playerName: string }) => {

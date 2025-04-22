@@ -10,10 +10,10 @@ export const SOCKET_OPTIONS = {
   transports: ['websocket', 'polling'],
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
-  timeout: 20000,
+  timeout: 30000, // Increase timeout
   forceNew: true, // Force new connection on each connect
   multiplex: false, // Disable multiplexing to ensure clean connections
 };
 
-// Add debug mode for development
-export const DEBUG_MODE = true; // Force debug mode on to help troubleshoot
+// Enable debug mode for development
+export const DEBUG_MODE = true; // Keep debug mode on for troubleshooting

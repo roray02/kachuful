@@ -18,6 +18,11 @@ export interface JoinLobbyParams {
   playerName: string;
 }
 
+// Format lobby code consistently
+const formatLobbyCode = (code: string): string => {
+  return code.trim().toUpperCase();
+};
+
 export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
   const createLobby = useCallback(({ playerName, maxRounds = 10 }: CreateLobbyParams) => {
     if (!socket) {
@@ -36,7 +41,7 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
     }
     
     // Format the lobby code consistently
-    const formattedLobbyCode = lobbyCode.trim().toUpperCase();
+    const formattedLobbyCode = formatLobbyCode(lobbyCode);
     
     if (DEBUG_MODE) {
       console.log(`Attempting to join lobby: ${formattedLobbyCode} as player: ${playerName}`);
@@ -44,11 +49,9 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       console.log('Socket ID:', socket.id);
     }
     
-    // Add a small delay to ensure socket connection is fully established
-    setTimeout(() => {
-      if (DEBUG_MODE) console.log('Sending joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
-      socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
-    }, 500);
+    // Send joinLobby event directly without delay
+    if (DEBUG_MODE) console.log('Sending joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
+    socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
   }, [socket]);
 
   const startGame = useCallback(() => {
