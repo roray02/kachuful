@@ -29,24 +29,38 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('gameStateUpdate', handleGameStateUpdate);
     
     socket.on('lobbyCreated', (data: { lobbyCode: string, playerId: string, gameState: GameState }) => {
-      if (DEBUG_MODE) console.log('Lobby created event:', data);
+      if (DEBUG_MODE) {
+        console.log('Lobby created event received:', data);
+        console.log('Lobby Code:', data.lobbyCode);
+        console.log('Player ID:', data.playerId);
+      }
+      
       setLobbyCode(data.lobbyCode);
       setPlayerId(data.playerId);
       setGameState(data.gameState);
+      
       if (onGameStateUpdate) {
         onGameStateUpdate(data.gameState);
       }
+      
       toast.success(`Lobby created: ${data.lobbyCode}`);
     });
     
     socket.on('lobbyJoined', (data: { lobbyCode: string, playerId: string, gameState: GameState }) => {
-      if (DEBUG_MODE) console.log('Lobby joined event:', data);
+      if (DEBUG_MODE) {
+        console.log('Lobby joined event received:', data);
+        console.log('Lobby Code:', data.lobbyCode);
+        console.log('Player ID:', data.playerId);
+      }
+      
       setLobbyCode(data.lobbyCode);
       setPlayerId(data.playerId);
       setGameState(data.gameState);
+      
       if (onGameStateUpdate) {
         onGameStateUpdate(data.gameState);
       }
+      
       toast.success(`Joined lobby: ${data.lobbyCode}`);
     });
     
@@ -59,24 +73,12 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('error', (data: { message: string }) => {
       console.error('Game error:', data.message);
       toast.error(data.message);
-      
-      // Reset lobby code if error is "Lobby not found"
-      if (data.message === 'Lobby not found') {
-        if (DEBUG_MODE) console.log('Resetting lobby code due to "Lobby not found" error');
-        // Do not reset lobbyCode state here to prevent React hook order issues
-      }
     });
 
     // Handle reconnection events
     socket.on('reconnect', (attemptNumber: number) => {
       if (DEBUG_MODE) console.log(`Socket reconnected after ${attemptNumber} attempts`);
       toast.success('Reconnected to server!');
-      
-      // If we have a lobbyCode and playerId, attempt to rejoin the lobby
-      if (lobbyCode && playerId) {
-        if (DEBUG_MODE) console.log('Attempting to rejoin lobby after reconnection');
-        // We don't have playerName here, so we can't automatically rejoin
-      }
     });
 
     return () => {
@@ -87,7 +89,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       socket.off('error');
       socket.off('reconnect');
     };
-  }, [socket, onGameStateUpdate, lobbyCode, playerId]);
+  }, [socket, onGameStateUpdate]);
 
   return {
     gameState,

@@ -13,7 +13,11 @@ export const useSocketConnection = () => {
   const socketRef = useRef<Socket | null>(null);
   
   const connectToSocket = useCallback(() => {
-    if (DEBUG_MODE) console.log('Connecting to game server at:', SOCKET_URL, 'with options:', SOCKET_OPTIONS);
+    if (DEBUG_MODE) {
+      console.log('Connecting to game server at:', SOCKET_URL);
+      console.log('With socket options:', SOCKET_OPTIONS);
+    }
+    
     setIsConnecting(true);
     
     // Clean up previous socket if it exists
@@ -29,10 +33,17 @@ export const useSocketConnection = () => {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        timeout: 30000, // Increased timeout for better handling
+        timeout: 30000,
       });
       
       socketRef.current = socketInstance;
+      
+      // Log all socket events for debugging
+      if (DEBUG_MODE) {
+        socketInstance.onAny((event, ...args) => {
+          console.log(`[Socket Event] ${event}:`, args);
+        });
+      }
       
       socketInstance.on('connect', () => {
         setConnected(true);

@@ -30,8 +30,17 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       return;
     }
     
-    if (DEBUG_MODE) console.log('Creating lobby with player:', playerName);
-    socket.emit('createLobby', { playerName, maxRounds });
+    if (DEBUG_MODE) {
+      console.log('Creating lobby with player:', playerName);
+      console.log('Socket connected status:', socket.connected);
+      console.log('Socket ID:', socket.id);
+    }
+    
+    // Use a small timeout to ensure socket is fully established
+    setTimeout(() => {
+      if (DEBUG_MODE) console.log('Emitting createLobby event now');
+      socket.emit('createLobby', { playerName, maxRounds });
+    }, 500);
   }, [socket]);
 
   const joinLobby = useCallback(({ lobbyCode, playerName }: JoinLobbyParams) => {
@@ -49,9 +58,11 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       console.log('Socket ID:', socket.id);
     }
     
-    // Send joinLobby event directly without delay
-    if (DEBUG_MODE) console.log('Sending joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
-    socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
+    // Use a small timeout to ensure socket is fully established
+    setTimeout(() => {
+      if (DEBUG_MODE) console.log('Emitting joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
+      socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
+    }, 500);
   }, [socket]);
 
   const startGame = useCallback(() => {
