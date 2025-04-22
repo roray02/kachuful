@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
+import { DEBUG_MODE } from '@/config/socketConfig';
 
 interface UseGameEventsProps {
   socket: Socket | null;
@@ -18,6 +19,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     if (!socket) return;
 
     const handleGameStateUpdate = (updatedGameState: GameState) => {
+      if (DEBUG_MODE) console.log('Game state updated:', updatedGameState);
       setGameState(updatedGameState);
       if (onGameStateUpdate) {
         onGameStateUpdate(updatedGameState);
@@ -27,6 +29,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('gameStateUpdate', handleGameStateUpdate);
     
     socket.on('lobbyCreated', (data: { lobbyCode: string, playerId: string, gameState: GameState }) => {
+      if (DEBUG_MODE) console.log('Lobby created event:', data);
       setLobbyCode(data.lobbyCode);
       setPlayerId(data.playerId);
       setGameState(data.gameState);
@@ -37,6 +40,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     });
     
     socket.on('lobbyJoined', (data: { lobbyCode: string, playerId: string, gameState: GameState }) => {
+      if (DEBUG_MODE) console.log('Lobby joined event:', data);
       setLobbyCode(data.lobbyCode);
       setPlayerId(data.playerId);
       setGameState(data.gameState);
@@ -46,8 +50,15 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       toast.success(`Joined lobby: ${data.lobbyCode}`);
     });
     
-    socket.on('playerDisconnected', () => {
+    socket.on('playerDisconnected', (data: { playerId: string }) => {
+      if (DEBUG_MODE) console.log('Player disconnected:', data);
       toast.error(`A player has disconnected`);
+    });
+    
+    // Add better error handling
+    socket.on('error', (data: { message: string }) => {
+      console.error('Game error:', data.message);
+      toast.error(data.message);
     });
 
     return () => {
@@ -55,6 +66,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       socket.off('lobbyCreated');
       socket.off('lobbyJoined');
       socket.off('playerDisconnected');
+      socket.off('error');
     };
   }, [socket, onGameStateUpdate]);
 
@@ -64,4 +76,3 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     lobbyCode
   };
 };
-

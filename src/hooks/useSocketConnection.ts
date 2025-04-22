@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_URL, SOCKET_OPTIONS } from '@/config/socketConfig';
+import { SOCKET_URL, SOCKET_OPTIONS, DEBUG_MODE } from '@/config/socketConfig';
 import { toast } from '@/components/ui/sonner';
 
 export const useSocketConnection = () => {
@@ -12,12 +12,13 @@ export const useSocketConnection = () => {
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   
-  useEffect(() => {
-    console.log('Connecting to game server at:', SOCKET_URL);
+  const connectToSocket = () => {
+    if (DEBUG_MODE) console.log('Connecting to game server at:', SOCKET_URL);
     setIsConnecting(true);
     
     // Clean up previous socket if it exists
     if (socketRef.current) {
+      if (DEBUG_MODE) console.log('Disconnecting existing socket...');
       socketRef.current.disconnect();
     }
     
@@ -36,13 +37,13 @@ export const useSocketConnection = () => {
       setIsConnecting(false);
       setConnectionAttempts(0);
       setError(null);
-      console.log('Connected to game server with ID:', socketInstance.id);
+      if (DEBUG_MODE) console.log('Connected to game server with ID:', socketInstance.id);
       toast.success('Connected to game server!');
     });
     
     socketInstance.on('disconnect', () => {
       setConnected(false);
-      console.log('Disconnected from game server');
+      if (DEBUG_MODE) console.log('Disconnected from game server');
     });
     
     socketInstance.on('connect_error', (err) => {
@@ -57,14 +58,20 @@ export const useSocketConnection = () => {
     });
     
     socketInstance.on('error', (data: { message: string }) => {
+      console.error('Socket error event:', data.message);
       setError(data.message);
       toast.error(data.message);
     });
     
     setSocket(socketInstance);
+  };
+  
+  useEffect(() => {
+    connectToSocket();
     
     return () => {
       if (socketRef.current) {
+        if (DEBUG_MODE) console.log('Cleaning up socket connection');
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -76,10 +83,9 @@ export const useSocketConnection = () => {
     setConnectionAttempts(0);
     setIsConnecting(true);
     setError(null);
+    if (DEBUG_MODE) console.log('Manual reconnect initiated');
     
-    if (socketRef.current) {
-      socketRef.current.connect();
-    }
+    connectToSocket();
   };
 
   return {

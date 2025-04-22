@@ -2,6 +2,7 @@
 import { useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { toast } from '@/components/ui/sonner';
+import { DEBUG_MODE } from '@/config/socketConfig';
 
 interface UseGameActionsProps {
   socket: Socket | null;
@@ -24,6 +25,8 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Not connected to server');
       return;
     }
+    
+    if (DEBUG_MODE) console.log('Creating lobby with player:', playerName);
     socket.emit('createLobby', { playerName, maxRounds });
   }, [socket]);
 
@@ -32,7 +35,12 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Not connected to server');
       return;
     }
-    socket.emit('joinLobby', { lobbyCode, playerName });
+    
+    // Format the lobby code consistently
+    const formattedLobbyCode = lobbyCode.trim().toUpperCase();
+    
+    if (DEBUG_MODE) console.log(`Attempting to join lobby: ${formattedLobbyCode} as player: ${playerName}`);
+    socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
   }, [socket]);
 
   const startGame = useCallback(() => {
@@ -40,6 +48,7 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Cannot start game');
       return;
     }
+    if (DEBUG_MODE) console.log('Starting game in lobby:', lobbyCode);
     socket.emit('startGame', { lobbyCode });
   }, [socket, lobbyCode]);
 
@@ -76,4 +85,3 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
     startNextRound
   };
 };
-
