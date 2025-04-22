@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { toast } from '@/components/ui/sonner';
@@ -30,6 +31,11 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       return;
     }
     
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
+      return;
+    }
+    
     if (DEBUG_MODE) {
       console.log('Creating lobby with player:', playerName);
       console.log('Socket connected status:', socket.connected);
@@ -39,13 +45,24 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
     // Use a small timeout to ensure socket is fully established
     setTimeout(() => {
       if (DEBUG_MODE) console.log('Emitting createLobby event now');
-      socket.emit('createLobby', { playerName, maxRounds });
-    }, 500);
+      
+      // Verify socket is still connected before emitting
+      if (socket.connected) {
+        socket.emit('createLobby', { playerName, maxRounds });
+      } else {
+        toast.error('Lost connection to server');
+      }
+    }, 300);
   }, [socket]);
 
   const joinLobby = useCallback(({ lobbyCode, playerName }: JoinLobbyParams) => {
     if (!socket) {
       toast.error('Not connected to server');
+      return;
+    }
+    
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
       return;
     }
     
@@ -61,8 +78,14 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
     // Use a small timeout to ensure socket is fully established
     setTimeout(() => {
       if (DEBUG_MODE) console.log('Emitting joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
-      socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
-    }, 500);
+      
+      // Verify socket is still connected before emitting
+      if (socket.connected) {
+        socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
+      } else {
+        toast.error('Lost connection to server');
+      }
+    }, 300);
   }, [socket]);
 
   const startGame = useCallback(() => {
@@ -70,6 +93,12 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Cannot start game');
       return;
     }
+    
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
+      return;
+    }
+    
     if (DEBUG_MODE) console.log('Starting game in lobby:', lobbyCode);
     socket.emit('startGame', { lobbyCode });
   }, [socket, lobbyCode]);
@@ -79,6 +108,12 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Cannot make bid');
       return;
     }
+    
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
+      return;
+    }
+    
     socket.emit('makeBid', { lobbyCode, bid });
   }, [socket, lobbyCode]);
 
@@ -87,6 +122,12 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Cannot play card');
       return;
     }
+    
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
+      return;
+    }
+    
     socket.emit('playCard', { lobbyCode, cardId });
   }, [socket, lobbyCode]);
 
@@ -95,6 +136,12 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
       toast.error('Cannot start next round');
       return;
     }
+    
+    if (!socket.connected) {
+      toast.error('Socket is not connected');
+      return;
+    }
+    
     socket.emit('startNextRound', { lobbyCode });
   }, [socket, lobbyCode]);
 

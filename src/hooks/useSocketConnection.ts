@@ -11,6 +11,7 @@ export const useSocketConnection = () => {
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const isInitialMount = useRef(true);
   
   const connectToSocket = useCallback(() => {
     if (DEBUG_MODE) {
@@ -21,19 +22,28 @@ export const useSocketConnection = () => {
     setIsConnecting(true);
     
     // Clean up previous socket if it exists
-    if (socketRef.current) {
+    if (socketRef.current && !socketRef.current.connected) {
       if (DEBUG_MODE) console.log('Disconnecting existing socket...');
       socketRef.current.disconnect();
       socketRef.current = null;
+    }
+    
+    // Don't create a new socket if we already have a connected one
+    if (socketRef.current && socketRef.current.connected) {
+      if (DEBUG_MODE) console.log('Using existing connected socket');
+      setConnected(true);
+      setIsConnecting(false);
+      setSocket(socketRef.current);
+      return;
     }
     
     try {
       const socketInstance = io(SOCKET_URL, {
         ...SOCKET_OPTIONS,
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: 10,
         reconnectionDelay: 1000,
-        timeout: 30000,
+        timeout: 60000,
       });
       
       socketRef.current = socketInstance;
@@ -54,10 +64,13 @@ export const useSocketConnection = () => {
         toast.success('Connected to game server!');
       });
       
-      socketInstance.on('disconnect', () => {
+      socketInstance.on('disconnect', (reason) => {
         setConnected(false);
-        if (DEBUG_MODE) console.log('Disconnected from game server');
-        toast.error('Disconnected from game server');
+        if (DEBUG_MODE) console.log('Disconnected from game server. Reason:', reason);
+        // Only show toast if it's an unexpected disconnect
+        if (reason !== 'io client disconnect') {
+          toast.error(`Disconnected from game server: ${reason}`);
+        }
       });
       
       socketInstance.on('connect_error', (err) => {
@@ -87,14 +100,17 @@ export const useSocketConnection = () => {
   }, [connectionAttempts]);
   
   useEffect(() => {
-    connectToSocket();
+    // Only connect on initial mount
+    if (isInitialMount.current) {
+      connectToSocket();
+      isInitialMount.current = false;
+    }
     
+    // Don't disconnect on component unmount - this allows the socket to persist
+    // between route changes
     return () => {
-      if (socketRef.current) {
-        if (DEBUG_MODE) console.log('Cleaning up socket connection');
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+      // We're no longer cleaning up the socket on component unmount
+      // This is important to prevent the auto-disconnect issue
     };
   }, [connectToSocket]);
 
@@ -105,14 +121,30 @@ export const useSocketConnection = () => {
     setError(null);
     if (DEBUG_MODE) console.log('Manual reconnect initiated');
     
+    // Force disconnect before reconnecting
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    
     connectToSocket();
   }, [connectToSocket]);
+
+  // Add a manual disconnect function for when we actually want to disconnect
+  const disconnect = useCallback(() => {
+    if (socketRef.current) {
+      if (DEBUG_MODE) console.log('Manual disconnect initiated');
+      socketRef.current.disconnect();
+      setConnected(false);
+    }
+  }, []);
 
   return {
     socket,
     connected,
     isConnecting,
     error,
-    reconnect
+    reconnect,
+    disconnect
   };
 };

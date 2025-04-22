@@ -5,10 +5,11 @@ export const SOCKET_URL = import.meta.env.VITE_SOCKET_SERVER_URL ||
 
 export const SOCKET_OPTIONS = {
   path: '/socket.io',
-  transports: ['websocket', 'polling'],
-  reconnectionAttempts: 5,
+  transports: ['websocket', 'polling'], 
+  reconnectionAttempts: 10,
   reconnectionDelay: 1000,
-  timeout: 30000,
+  timeout: 60000,
+  autoConnect: true,
   forceNew: true,
   multiplex: false,
 };

@@ -53,8 +53,14 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       return;
     }
     
+    // Log the socket state to debug
+    if (DEBUG_MODE && socket) {
+      console.log('Socket connected status:', socket.connected);
+      console.log('Socket ID:', socket.id);
+    }
+    
     gameActions.createLobby(params);
-  }, [connected, gameActions, reconnect]);
+  }, [connected, gameActions, reconnect, socket]);
   
   // Retry join if connection was restored
   useEffect(() => {
