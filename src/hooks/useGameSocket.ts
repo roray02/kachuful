@@ -9,7 +9,7 @@ interface GameSocketProps {
 }
 
 const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
-  const { socket, connected, isConnecting, error } = useSocketConnection();
+  const { socket, connected, isConnecting, error, reconnect } = useSocketConnection();
   const { gameState, playerId, lobbyCode } = useGameEvents({ socket, onGameStateUpdate });
   const gameActions = useGameActions({ socket, lobbyCode });
 
@@ -20,9 +20,9 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     lobbyCode,
     error,
     isConnecting,
+    reconnect,
     ...gameActions
   };
 };
 
 export default useGameSocket;
-

@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -8,16 +9,19 @@ const { createDeck, shuffleDeck, dealCards, determineTrickWinner, calculateScore
 const app = express();
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins during development
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 
 const server = http.createServer(app);
 
 // Initialize Socket.IO with CORS configuration
 const io = new Server(server, {
   cors: {
-    // In production, this should be your frontend URL
-    // In development, it allows connections from all origins
-    origin: process.env.FRONTEND_URL || "*",
+    // In production, accept all origins temporarily for debugging
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
     allowedHeaders: ["*"]

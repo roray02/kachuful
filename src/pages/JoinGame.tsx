@@ -23,6 +23,7 @@ const JoinGame = () => {
     error, 
     connected,
     isConnecting,
+    reconnect,
     lobbyCode: connectedLobbyCode
   } = useGameSocket();
 
@@ -61,6 +62,7 @@ const JoinGame = () => {
 
     if (!connected) {
       toast.error("Connecting to server...");
+      reconnect();
       return;
     }
 
@@ -80,10 +82,16 @@ const JoinGame = () => {
 
     if (!connected) {
       toast.error("Connecting to server...");
+      reconnect();
       return;
     }
 
     joinLobby({ lobbyCode, playerName });
+  };
+
+  const handleReconnect = () => {
+    toast.info("Attempting to reconnect...");
+    reconnect();
   };
 
   return (
@@ -138,8 +146,23 @@ const JoinGame = () => {
           
           {showConnectionError && (
             <Alert className="bg-red-800 border-red-600">
+              <AlertDescription className="text-red-200 flex flex-col gap-2">
+                <span>Cannot connect to the game server. The server might be down or experiencing issues.</span>
+                <Button 
+                  onClick={handleReconnect} 
+                  variant="outline" 
+                  className="mt-2 border-red-500 text-red-200 hover:bg-red-700"
+                >
+                  Try Reconnecting
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {error && (
+            <Alert className="bg-red-800 border-red-600">
               <AlertDescription className="text-red-200">
-                Cannot connect to the game server. The server might be down or experiencing issues.
+                Error: {error}
               </AlertDescription>
             </Alert>
           )}
@@ -150,7 +173,7 @@ const JoinGame = () => {
               <Button 
                 onClick={handleCreateGame} 
                 className="w-full bg-green-600 hover:bg-green-700"
-                disabled={!connected}
+                disabled={isConnecting}
               >
                 Create Game
               </Button>
@@ -167,7 +190,7 @@ const JoinGame = () => {
               <Button 
                 onClick={handleJoinGame}
                 className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={!connected}
+                disabled={isConnecting}
               >
                 Join Game
               </Button>

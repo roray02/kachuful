@@ -3,7 +3,7 @@
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_SERVER_URL || 
   (window.location.hostname === 'localhost' 
     ? 'http://localhost:3001' 
-    : '');
+    : 'https://kachu-server.onrender.com');
 
 export const SOCKET_OPTIONS = {
   path: '/socket.io',
