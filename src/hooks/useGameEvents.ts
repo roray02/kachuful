@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import { GameState } from '@/types/game';
 import { toast } from '@/components/ui/sonner';
@@ -15,19 +15,17 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [lobbyCode, setLobbyCode] = useState<string | null>(null);
 
-  // Handler for game state update
-  const handleGameStateUpdate = useCallback((updatedGameState: GameState) => {
-    if (DEBUG_MODE) console.log('Game state updated:', updatedGameState);
-    setGameState(updatedGameState);
-    if (onGameStateUpdate) {
-      onGameStateUpdate(updatedGameState);
-    }
-  }, [onGameStateUpdate]);
-
   useEffect(() => {
     if (!socket) return;
 
-    // Set up all socket event listeners
+    const handleGameStateUpdate = (updatedGameState: GameState) => {
+      if (DEBUG_MODE) console.log('Game state updated:', updatedGameState);
+      setGameState(updatedGameState);
+      if (onGameStateUpdate) {
+        onGameStateUpdate(updatedGameState);
+      }
+    };
+
     socket.on('gameStateUpdate', handleGameStateUpdate);
     
     socket.on('lobbyCreated', (data: { lobbyCode: string, playerId: string, gameState: GameState }) => {
@@ -66,28 +64,9 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       toast.success(`Joined lobby: ${data.lobbyCode}`);
     });
     
-    socket.on('playerJoined', (data: { playerId: string, playerName: string, gameState: GameState }) => {
-      if (DEBUG_MODE) console.log('Player joined:', data);
-      toast.success(`${data.playerName} joined the game`);
-      
-      // Update game state to show new player
-      setGameState(data.gameState);
-      
-      if (onGameStateUpdate) {
-        onGameStateUpdate(data.gameState);
-      }
-    });
-    
-    socket.on('playerDisconnected', (data: { playerId: string, gameState: GameState }) => {
+    socket.on('playerDisconnected', (data: { playerId: string }) => {
       if (DEBUG_MODE) console.log('Player disconnected:', data);
       toast.error(`A player has disconnected`);
-      
-      // Update game state to reflect disconnected player
-      setGameState(data.gameState);
-      
-      if (onGameStateUpdate) {
-        onGameStateUpdate(data.gameState);
-      }
     });
     
     // Add better error handling
@@ -100,23 +79,17 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('reconnect', (attemptNumber: number) => {
       if (DEBUG_MODE) console.log(`Socket reconnected after ${attemptNumber} attempts`);
       toast.success('Reconnected to server!');
-      
-      // If we have a lobby code, request the current game state
-      if (lobbyCode) {
-        socket.emit('getGameState', { lobbyCode });
-      }
     });
 
     return () => {
       socket.off('gameStateUpdate');
       socket.off('lobbyCreated');
       socket.off('lobbyJoined');
-      socket.off('playerJoined');
       socket.off('playerDisconnected');
       socket.off('error');
       socket.off('reconnect');
     };
-  }, [socket, onGameStateUpdate, handleGameStateUpdate, lobbyCode]);
+  }, [socket, onGameStateUpdate]);
 
   return {
     gameState,

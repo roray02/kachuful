@@ -9,7 +9,6 @@ import RoundSummary from "@/components/RoundSummary";
 import { Button } from "@/components/ui/button";
 import useGameSocket from "@/hooks/useGameSocket";
 import { toast } from "@/components/ui/sonner";
-import { DEBUG_MODE } from "@/config/socketConfig";
 
 const Game = () => {
   const location = useLocation();
@@ -41,33 +40,18 @@ const Game = () => {
   
   // When connecting to an existing game
   useEffect(() => {
-    // If we have gameState from the connection, use it
-    if (gameState) {
-      setGameStateLocal(gameState);
-    }
     // If we don't have a gameState from the connection but we have initial state from navigation
-    else if (!gameState && location.state?.gameState) {
+    if (!gameState && location.state?.gameState) {
       setGameStateLocal(location.state.gameState);
     }
-    
-    if (DEBUG_MODE) {
-      console.log('Game component - current gameState:', gameState);
-      console.log('Game component - current playerId:', playerId);
-      console.log('Game component - current lobbyCode from params:', lobbyCode);
-    }
-  }, [gameState, location.state, playerId, lobbyCode]);
+  }, [gameState, location.state]);
   
-  // If we don't have a game state or player data after a reasonable time, redirect to join page
+  // If we don't have a game state or player data, redirect to join page
   useEffect(() => {
-    const redirectTimer = setTimeout(() => {
-      if (!gameStateLocal && !connected) {
-        toast.error("Could not connect to game");
-        navigate("/join");
-      }
-    }, 5000);
-    
-    return () => clearTimeout(redirectTimer);
-  }, [gameStateLocal, connected, navigate]);
+    if (!gameStateLocal && !location.state) {
+      navigate("/join");
+    }
+  }, [gameStateLocal, location.state, navigate]);
   
   // Get the current player
   const currentPlayer = gameStateLocal?.players.find(player => player.id === playerId);
@@ -109,15 +93,6 @@ const Game = () => {
     if (!currentPlayer?.isHost) return;
     
     startGame();
-    toast.success("Game started!");
-  };
-  
-  // Handle copying the lobby code to clipboard
-  const handleCopyLobbyCode = () => {
-    if (lobbyCode) {
-      navigator.clipboard.writeText(lobbyCode);
-      toast.success("Lobby code copied to clipboard!");
-    }
   };
   
   // Get the next dealer's name
@@ -167,17 +142,7 @@ const Game = () => {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-bold text-yellow-400">Kachufool</h1>
-            <div className="flex items-center space-x-2">
-              <p className="text-yellow-200">Lobby: {lobbyCode}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyLobbyCode}
-                className="border-yellow-500 text-yellow-500 hover:bg-yellow-900 h-6 py-0 px-2"
-              >
-                Copy
-              </Button>
-            </div>
+            <p className="text-yellow-200">Lobby: {lobbyCode}</p>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold">{getGameStatus()}</div>
@@ -188,7 +153,7 @@ const Game = () => {
           <div>
             <Button
               variant="outline"
-              onClick={() => navigate("/join")}
+              onClick={() => navigate("/")}
               className="border-red-500 text-red-500 hover:bg-red-900"
             >
               Leave Game
@@ -206,11 +171,7 @@ const Game = () => {
                   key={player.id} 
                   className="flex justify-between items-center bg-indigo-700 p-3 rounded"
                 >
-                  <span>
-                    {player.name} 
-                    {player.isHost ? " (Host)" : ""} 
-                    {player.id === playerId ? " (You)" : ""}
-                  </span>
+                  <span>{player.name} {player.isHost ? "(Host)" : ""}</span>
                   <span className={player.isConnected ? "text-green-400" : "text-red-400"}>
                     {player.isConnected ? "Connected" : "Disconnected"}
                   </span>

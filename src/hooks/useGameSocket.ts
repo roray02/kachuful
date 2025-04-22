@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GameState } from '@/types/game';
 import { useSocketConnection } from './useSocketConnection';
 import { useGameEvents } from './useGameEvents';
@@ -22,42 +22,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     timestamp: number;
   } | null>(null);
   
-  // Store the current lobby code to localStorage for reconnection
-  useEffect(() => {
-    if (lobbyCode && playerId) {
-      localStorage.setItem('kachuLastLobby', lobbyCode);
-      localStorage.setItem('kachuLastPlayerId', playerId);
-      
-      if (DEBUG_MODE) console.log(`Stored lobby ${lobbyCode} and player ${playerId} to localStorage`);
-    }
-  }, [lobbyCode, playerId]);
-  
-  // Try to rejoin on initial load if we have cached lobby info
-  useEffect(() => {
-    const cachedLobbyCode = localStorage.getItem('kachuLastLobby');
-    const cachedPlayerId = localStorage.getItem('kachuLastPlayerId');
-    const cachedPlayerName = localStorage.getItem('kachuLastPlayerName');
-    
-    if (DEBUG_MODE) {
-      console.log('Checking for cached lobby data:');
-      console.log('Cached lobby:', cachedLobbyCode);
-      console.log('Cached player ID:', cachedPlayerId);
-      console.log('Cached player name:', cachedPlayerName);
-    }
-    
-    // If we have cached lobby info and we're not already in a lobby
-    if (cachedLobbyCode && cachedPlayerName && !lobbyCode && connected) {
-      if (DEBUG_MODE) console.log(`Attempting to rejoin lobby ${cachedLobbyCode} as ${cachedPlayerName}`);
-      
-      // Try to rejoin with the cached info
-      gameActions.joinLobby({
-        lobbyCode: cachedLobbyCode,
-        playerName: cachedPlayerName
-      });
-    }
-  }, [connected, lobbyCode, gameActions]);
-  
-  // Enhanced join lobby function that tracks the attempt and stores player name
+  // Enhanced join lobby function that tracks the attempt
   const enhancedJoinLobby = useCallback((params: { lobbyCode: string; playerName: string }) => {
     const now = Date.now();
     if (DEBUG_MODE) console.log(`Join lobby attempt at ${now}:`, params);
@@ -67,9 +32,6 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       ...params,
       timestamp: now
     });
-    
-    // Store player name for reconnection
-    localStorage.setItem('kachuLastPlayerName', params.playerName);
     
     if (!connected) {
       toast.error('Not connected to server. Attempting to reconnect...');
@@ -85,9 +47,6 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     if (DEBUG_MODE) console.log('Create lobby attempt:', params);
     setLastJoinAttempt(null);
     
-    // Store player name for reconnection
-    localStorage.setItem('kachuLastPlayerName', params.playerName);
-    
     if (!connected) {
       toast.error('Not connected to server. Attempting to reconnect...');
       reconnect();
@@ -102,37 +61,6 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     
     gameActions.createLobby(params);
   }, [connected, gameActions, reconnect, socket]);
-  
-  // Periodically refresh game state (every 5 seconds)
-  const refreshInterval = useRef<NodeJS.Timeout | null>(null);
-  
-  useEffect(() => {
-    // If we're in a lobby, set up periodic refresh
-    if (connected && lobbyCode) {
-      if (DEBUG_MODE) console.log('Setting up periodic game state refresh');
-      
-      // Clear any existing interval
-      if (refreshInterval.current) {
-        clearInterval(refreshInterval.current);
-      }
-      
-      // Set up new interval to refresh game state
-      refreshInterval.current = setInterval(() => {
-        if (socket?.connected && lobbyCode) {
-          if (DEBUG_MODE) console.log('Refreshing game state');
-          socket.emit('getGameState', { lobbyCode });
-        }
-      }, 5000); // Refresh every 5 seconds
-    }
-    
-    // Clean up interval on unmount or when disconnected
-    return () => {
-      if (refreshInterval.current) {
-        clearInterval(refreshInterval.current);
-        refreshInterval.current = null;
-      }
-    };
-  }, [connected, lobbyCode, socket]);
   
   // Retry join if connection was restored
   useEffect(() => {
