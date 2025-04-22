@@ -13,5 +13,9 @@ export const SOCKET_OPTIONS = {
   multiplex: false,
 };
 
+// Add redirect URL to use when needed
+export const PUBLIC_URL = import.meta.env.VITE_PUBLIC_URL || 
+  window.location.origin;
+
 // Enable debug mode for development - keep this on until we resolve all issues
 export const DEBUG_MODE = true;
