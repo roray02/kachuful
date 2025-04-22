@@ -21,13 +21,6 @@ export const useSocketConnection = () => {
     
     setIsConnecting(true);
     
-    // Clean up previous socket if it exists
-    if (socketRef.current && !socketRef.current.connected) {
-      if (DEBUG_MODE) console.log('Disconnecting existing socket...');
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-    
     // Don't create a new socket if we already have a connected one
     if (socketRef.current && socketRef.current.connected) {
       if (DEBUG_MODE) console.log('Using existing connected socket');
@@ -37,7 +30,15 @@ export const useSocketConnection = () => {
       return;
     }
     
+    // Clean up previous socket if it exists but isn't connected
+    if (socketRef.current && !socketRef.current.connected) {
+      if (DEBUG_MODE) console.log('Disconnecting existing socket...');
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    
     try {
+      // Important: Creating a new socket with forceNew: false to prevent duplications
       const socketInstance = io(SOCKET_URL, {
         ...SOCKET_OPTIONS,
         reconnection: true,

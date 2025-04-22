@@ -22,6 +22,9 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
     timestamp: number;
   } | null>(null);
   
+  // Reference to track if we've already joined this session to prevent duplicates
+  const hasJoinedThisSession = useRef(false);
+  
   // Store the current lobby code to localStorage for reconnection
   useEffect(() => {
     if (lobbyCode && playerId) {
@@ -34,6 +37,12 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   
   // Try to rejoin on initial load if we have cached lobby info
   useEffect(() => {
+    // Only attempt to rejoin if we haven't already joined this session
+    if (hasJoinedThisSession.current) {
+      if (DEBUG_MODE) console.log('Already joined this session, skipping auto-rejoin');
+      return;
+    }
+    
     const cachedLobbyCode = localStorage.getItem('kachuLastLobby');
     const cachedPlayerId = localStorage.getItem('kachuLastPlayerId');
     const cachedPlayerName = localStorage.getItem('kachuLastPlayerName');
@@ -54,6 +63,9 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
         lobbyCode: cachedLobbyCode,
         playerName: cachedPlayerName
       });
+      
+      // Mark that we've attempted to join this session
+      hasJoinedThisSession.current = true;
     }
   }, [connected, lobbyCode, gameActions]);
   
@@ -77,6 +89,9 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       return;
     }
     
+    // Mark that we've attempted to join this session
+    hasJoinedThisSession.current = true;
+    
     gameActions.joinLobby(params);
   }, [connected, gameActions, reconnect]);
   
@@ -99,6 +114,9 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       console.log('Socket connected status:', socket.connected);
       console.log('Socket ID:', socket.id);
     }
+    
+    // Mark that we've attempted to join this session
+    hasJoinedThisSession.current = true;
     
     gameActions.createLobby(params);
   }, [connected, gameActions, reconnect, socket]);
@@ -153,6 +171,13 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
       }
     }
   }, [connected, lastJoinAttempt, lobbyCode, gameActions]);
+
+  // Reset the join tracking when the component unmounts
+  useEffect(() => {
+    return () => {
+      hasJoinedThisSession.current = false;
+    };
+  }, []);
 
   return {
     connected,

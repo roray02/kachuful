@@ -107,6 +107,22 @@ io.on('connection', (socket) => {
   // Create a new lobby
   socket.on('createLobby', ({ playerName, maxRounds = 10 }) => {
     try {
+      // Check if player is already in a lobby
+      if (playerSockets.has(socket.id)) {
+        const existingData = playerSockets.get(socket.id);
+        if (lobbies.has(existingData.lobbyCode)) {
+          console.log(`Player already in lobby ${existingData.lobbyCode}, not creating a new one`);
+          
+          // Send the existing game state
+          socket.emit('lobbyCreated', { 
+            lobbyCode: existingData.lobbyCode, 
+            playerId: socket.id,
+            gameState: lobbies.get(existingData.lobbyCode)
+          });
+          return;
+        }
+      }
+      
       const lobbyCode = generateLobbyCode();
       const playerId = socket.id;
       
@@ -151,6 +167,35 @@ io.on('connection', (socket) => {
       // Get game state
       const gameState = lobbies.get(lobbyCode);
       
+      // Check if player is already in this lobby
+      const existingPlayerIndex = gameState.players.findIndex(p => p.id === playerId);
+      
+      if (existingPlayerIndex >= 0) {
+        console.log(`Player ${playerName} is already in lobby ${lobbyCode}, reconnecting`);
+        
+        // Update player connection status
+        gameState.players[existingPlayerIndex].isConnected = true;
+        gameState.players[existingPlayerIndex].name = playerName; // Update name if changed
+        
+        // Track player socket
+        playerSockets.set(playerId, { socketId: socket.id, lobbyCode });
+        
+        // Join socket.io room
+        socket.join(lobbyCode);
+        
+        // Send join confirmation
+        socket.emit('lobbyJoined', { 
+          lobbyCode, 
+          playerId,
+          gameState
+        });
+        
+        // Update all clients
+        io.to(lobbyCode).emit('gameStateUpdate', gameState);
+        
+        return;
+      }
+      
       // Check if game already started
       if (gameState.phase !== "waiting") {
         socket.emit('error', { message: 'Game already in progress' });
@@ -193,6 +238,22 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error joining lobby:', error);
       socket.emit('error', { message: 'Failed to join lobby' });
+    }
+  });
+
+  // Get game state for a lobby
+  socket.on('getGameState', ({ lobbyCode }) => {
+    try {
+      if (!lobbies.has(lobbyCode)) {
+        socket.emit('error', { message: 'Lobby not found' });
+        return;
+      }
+      
+      const gameState = lobbies.get(lobbyCode);
+      socket.emit('gameStateUpdate', gameState);
+    } catch (error) {
+      console.error('Error getting game state:', error);
+      socket.emit('error', { message: 'Failed to get game state' });
     }
   });
 
