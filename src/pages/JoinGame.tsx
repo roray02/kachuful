@@ -27,14 +27,6 @@ const JoinGame = () => {
     lobbyCode: connectedLobbyCode
   } = useGameSocket();
 
-  // Load saved player name from localStorage if available
-  useEffect(() => {
-    const savedName = localStorage.getItem('kachuLastPlayerName');
-    if (savedName) {
-      setPlayerName(savedName);
-    }
-  }, []);
-
   // When we successfully connect to a lobby, navigate to the game page
   useEffect(() => {
     if (gameState && connectedLobbyCode) {
