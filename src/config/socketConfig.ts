@@ -1,4 +1,3 @@
-
 // Determine the correct socket URL based on environment
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_SERVER_URL || 
   'https://kachu-server.onrender.com'; // Always use the Render URL since that's where the server is running
@@ -14,5 +13,5 @@ export const SOCKET_OPTIONS = {
   multiplex: false,
 };
 
-// Enable debug mode for development
-export const DEBUG_MODE = true; // Keep debug mode on for troubleshooting
+// Enable debug mode for development - keep this on until we resolve all issues
+export const DEBUG_MODE = true;
