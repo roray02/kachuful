@@ -59,6 +59,17 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
     socket.on('error', (data: { message: string }) => {
       console.error('Game error:', data.message);
       toast.error(data.message);
+      
+      // Reset lobby code if error is "Lobby not found"
+      if (data.message === 'Lobby not found') {
+        if (DEBUG_MODE) console.log('Resetting lobby code due to "Lobby not found" error');
+      }
+    });
+
+    // Handle reconnection events
+    socket.on('reconnect', (attemptNumber: number) => {
+      if (DEBUG_MODE) console.log(`Socket reconnected after ${attemptNumber} attempts`);
+      toast.success('Reconnected to server!');
     });
 
     return () => {
@@ -67,6 +78,7 @@ export const useGameEvents = ({ socket, onGameStateUpdate }: UseGameEventsProps)
       socket.off('lobbyJoined');
       socket.off('playerDisconnected');
       socket.off('error');
+      socket.off('reconnect');
     };
   }, [socket, onGameStateUpdate]);
 

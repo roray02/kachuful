@@ -11,9 +11,9 @@ export const SOCKET_OPTIONS = {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   timeout: 20000,
-  forceNew: false,
-  multiplex: true,
+  forceNew: true, // Force new connection on each connect
+  multiplex: false, // Disable multiplexing to ensure clean connections
 };
 
 // Add debug mode for development
-export const DEBUG_MODE = import.meta.env.DEV || true;
+export const DEBUG_MODE = true; // Force debug mode on to help troubleshoot

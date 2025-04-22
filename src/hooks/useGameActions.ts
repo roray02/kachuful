@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { Socket } from 'socket.io-client';
 import { toast } from '@/components/ui/sonner';
@@ -39,8 +38,17 @@ export const useGameActions = ({ socket, lobbyCode }: UseGameActionsProps) => {
     // Format the lobby code consistently
     const formattedLobbyCode = lobbyCode.trim().toUpperCase();
     
-    if (DEBUG_MODE) console.log(`Attempting to join lobby: ${formattedLobbyCode} as player: ${playerName}`);
-    socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
+    if (DEBUG_MODE) {
+      console.log(`Attempting to join lobby: ${formattedLobbyCode} as player: ${playerName}`);
+      console.log('Socket connected status:', socket.connected);
+      console.log('Socket ID:', socket.id);
+    }
+    
+    // Add a small delay to ensure socket connection is fully established
+    setTimeout(() => {
+      if (DEBUG_MODE) console.log('Sending joinLobby event with data:', { lobbyCode: formattedLobbyCode, playerName });
+      socket.emit('joinLobby', { lobbyCode: formattedLobbyCode, playerName });
+    }, 500);
   }, [socket]);
 
   const startGame = useCallback(() => {

@@ -1,10 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GameState } from '@/types/game';
 import { useSocketConnection } from './useSocketConnection';
 import { useGameEvents } from './useGameEvents';
 import { useGameActions } from './useGameActions';
 import { DEBUG_MODE } from '@/config/socketConfig';
+import { toast } from '@/components/ui/sonner';
 
 interface GameSocketProps {
   onGameStateUpdate?: (gameState: GameState) => void;
@@ -14,6 +15,7 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   const [lastJoinAttempt, setLastJoinAttempt] = useState<{
     lobbyCode: string;
     playerName: string;
+    timestamp: number;
   } | null>(null);
   
   const { socket, connected, isConnecting, error, reconnect } = useSocketConnection();
@@ -21,24 +23,56 @@ const useGameSocket = ({ onGameStateUpdate }: GameSocketProps = {}) => {
   const gameActions = useGameActions({ socket, lobbyCode });
   
   // Enhanced join lobby function that tracks the attempt
-  const enhancedJoinLobby = (params: { lobbyCode: string; playerName: string }) => {
-    setLastJoinAttempt(params);
+  const enhancedJoinLobby = useCallback((params: { lobbyCode: string; playerName: string }) => {
+    const now = Date.now();
+    if (DEBUG_MODE) console.log(`Join lobby attempt at ${now}:`, params);
+    
+    // Store join attempt with timestamp
+    setLastJoinAttempt({
+      ...params,
+      timestamp: now
+    });
+    
+    if (!connected) {
+      toast.error('Not connected to server. Attempting to reconnect...');
+      reconnect();
+      return;
+    }
+    
     gameActions.joinLobby(params);
-  };
+  }, [connected, gameActions, reconnect]);
   
   // Enhanced create lobby function
-  const enhancedCreateLobby = (params: { playerName: string; maxRounds?: number }) => {
+  const enhancedCreateLobby = useCallback((params: { playerName: string; maxRounds?: number }) => {
+    if (DEBUG_MODE) console.log('Create lobby attempt:', params);
     setLastJoinAttempt(null);
+    
+    if (!connected) {
+      toast.error('Not connected to server. Attempting to reconnect...');
+      reconnect();
+      return;
+    }
+    
     gameActions.createLobby(params);
-  };
+  }, [connected, gameActions, reconnect]);
   
   // Retry join if connection was restored
   useEffect(() => {
     if (connected && lastJoinAttempt && !lobbyCode) {
-      if (DEBUG_MODE) console.log('Retrying previous join attempt:', lastJoinAttempt);
-      setTimeout(() => {
-        gameActions.joinLobby(lastJoinAttempt);
-      }, 500);
+      const timeSinceLastAttempt = Date.now() - lastJoinAttempt.timestamp;
+      
+      // Only retry if the last attempt was recent (within the last 10 seconds)
+      if (timeSinceLastAttempt < 10000) {
+        if (DEBUG_MODE) console.log('Retrying previous join attempt:', lastJoinAttempt);
+        
+        // Add a small delay to ensure connection is fully established
+        setTimeout(() => {
+          gameActions.joinLobby({
+            lobbyCode: lastJoinAttempt.lobbyCode,
+            playerName: lastJoinAttempt.playerName
+          });
+        }, 1000);
+      }
     }
   }, [connected, lastJoinAttempt, lobbyCode, gameActions]);
 
